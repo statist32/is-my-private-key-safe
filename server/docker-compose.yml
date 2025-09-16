@@ -1,0 +1,7 @@
+services:
+  counter:
+    build: .
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./counter.txt:/app/counter.txt
