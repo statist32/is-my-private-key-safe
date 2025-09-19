@@ -19,8 +19,8 @@ func main() {
 	log.Println("Starting HTTPS server on :1337")
 	err := http.ListenAndServeTLS(
 		":1337",
-		"/etc/letsencrypt/live/api.is-my-private-key-safe.com/fullchain.pem",
-		"/etc/letsencrypt/live/api.is-my-private-key-safe.com/privkey.pem",
+		"/app/fullchain.pem",
+		"/app/privkey.pem",
 		nil,
 	)
 	if err != nil {
