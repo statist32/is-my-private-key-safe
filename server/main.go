@@ -16,8 +16,16 @@ func main() {
 	http.HandleFunc("/increment", corsMiddleware(incrementHandler))
 	http.HandleFunc("/checks", corsMiddleware(checksHandler))
 
-	fmt.Println("Server running on :1337")
-	log.Fatal(http.ListenAndServe(":1337", nil))
+	log.Println("Starting HTTPS server on :1337")
+	err := http.ListenAndServeTLS(
+		":1337",
+		"/etc/letsencrypt/live/api.is-my-private-key-safe.com/fullchain.pem",
+		"/etc/letsencrypt/live/api.is-my-private-key-safe.com/privkey.pem",
+		nil,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func incrementHandler(w http.ResponseWriter, r *http.Request) {

@@ -5,3 +5,5 @@ services:
       - "1337:1337"
     volumes:
       - ./counter.txt:/app/counter.txt
+      - /etc/letsencrypt/live/api.is-my-private-key-safe.com/fullchain.pem:/app/fullchain.pem:ro
+      - /etc/letsencrypt/live/api.is-my-private-key-safe.com/privkey.pem:/app/privkey.pem:ro
