@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/is-my-private-key-safe/",
+  // base: "/is-my-private-key-safe/",
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
