@@ -2,17 +2,28 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"sync"
+	"time"
 )
 
 var (
 	counter int
 	mu      sync.Mutex
+	file    = "/app/counter.txt"
 )
 
 func main() {
+	// Load counter from file on startup
+	loadCounter()
+
+	// Periodically save counter to file every 5 minutes
+	go saveCounterPeriodically()
+
 	http.HandleFunc("/increment", corsMiddleware(incrementHandler))
 	http.HandleFunc("/checks", corsMiddleware(checksHandler))
 
@@ -58,18 +69,59 @@ func checksHandler(w http.ResponseWriter, r *http.Request) {
 // Simple CORS middleware
 func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Allow any origin (for development)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		// Allow common headers/methods
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-		// Handle preflight requests
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
 		next(w, r)
+	}
+}
+
+// Load counter from file
+func loadCounter() {
+	data, err := os.ReadFile(file)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Println("counter.txt not found, starting at 0")
+			counter = 0
+			return
+		}
+		log.Fatalf("Failed to read counter file: %v", err)
+	}
+
+	value, err := strconv.Atoi(string(data))
+	if err != nil {
+		log.Fatalf("Invalid counter value in file: %v", err)
+	}
+	counter = value
+	log.Printf("Loaded counter value: %d", counter)
+}
+
+// Save counter to file
+func saveCounter() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	err := ioutil.WriteFile(file, []byte(strconv.Itoa(counter)), 0644)
+	if err != nil {
+		log.Printf("Failed to save counter: %v", err)
+	} else {
+		log.Printf("Counter saved: %d", counter)
+	}
+}
+
+// Save counter periodically
+func saveCounterPeriodically() {
+	ticker := time.NewTicker(5 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		<-ticker.C
+		saveCounter()
 	}
 }
