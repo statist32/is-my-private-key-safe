@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -84,7 +85,7 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 // Load counter from file
 func loadCounter() {
-	data, err := os.ReadFile(file)
+	data, err := ioutil.ReadFile(file)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Println("counter.txt not found, starting at 0")
@@ -94,7 +95,9 @@ func loadCounter() {
 		log.Fatalf("Failed to read counter file: %v", err)
 	}
 
-	value, err := strconv.Atoi(string(data))
+	// Trim whitespace and newline
+	strValue := strings.TrimSpace(string(data))
+	value, err := strconv.Atoi(strValue)
 	if err != nil {
 		log.Fatalf("Invalid counter value in file: %v", err)
 	}
